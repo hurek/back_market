@@ -1,7 +1,8 @@
 import sqlite3
-import telebot
 import time
+import telebot
 from telebot import types
+
 from config import initialize
 
 bot = initialize()
@@ -61,7 +62,7 @@ def send_welcome(message):
 		cursor.execute(f"""INSERT INTO steps ('telegram_id', 'username') VALUES ('{message.from_user.id}', 'anonymus')""")
 		conn.commit()
 	keyboard = types.InlineKeyboardMarkup()
-	keyboard.add(types.InlineKeyboardButton(text="Catalog", callback_data='catalog0'))
+	keyboard.add(types.InlineKeyboardButton(text="Каталог", callback_data='catalog0'))
 	bot.send_photo(message.from_user.id, open('img/blackmarket.png', 'rb'), reply_markup=keyboard)
 	conn.close()
 
@@ -102,8 +103,8 @@ def send_product(product, chat):
 	cursor = conn.cursor()
 	entity = cursor.execute(f"""SELECT * FROM shop WHERE name = '{product}'""").fetchall()[0]
 	conn.close()
-	keyboard.add(types.InlineKeyboardButton(text=f"Buy {entity[3]}", callback_data=f'buy{product}'))
-	keyboard.add(types.InlineKeyboardButton(text="Back", callback_data='back'))
+	keyboard.add(types.InlineKeyboardButton(text=f"Купить {entity[3]}", callback_data=f'buy{product}'))
+	keyboard.add(types.InlineKeyboardButton(text="Назад", callback_data='back'))
 	bot.send_photo(chat_id=chat.id, photo=open(entity[1], 'rb'), caption=entity[2], reply_markup=keyboard)
 
 
