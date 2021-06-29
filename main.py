@@ -57,8 +57,8 @@ def send_welcome(message):
 	conn = sqlite3.connect("mydatabase.db")
 	cursor = conn.cursor()
 	if not cursor.execute(f"""SELECT * FROM wallet WHERE telegram_id = {message.from_user.id}""").fetchall():
-		cursor.execute(f"""INSERT INTO wallet ('telegram_id', 'username') VALUES ('{message.from_user.id}', '{message.from_user.username}')""")
-		cursor.execute(f"""INSERT INTO steps ('telegram_id', 'username') VALUES ('{message.from_user.id}', '{message.from_user.username}')""")
+		cursor.execute(f"""INSERT INTO wallet ('telegram_id', 'username') VALUES ('{message.from_user.id}', 'anonymus')""")
+		cursor.execute(f"""INSERT INTO steps ('telegram_id', 'username') VALUES ('{message.from_user.id}', 'anonymus')""")
 		conn.commit()
 	keyboard = types.InlineKeyboardMarkup()
 	keyboard.add(types.InlineKeyboardButton(text="Catalog", callback_data='catalog0'))
@@ -116,24 +116,30 @@ def buy_product(call):
 		cursor.execute(f"""UPDATE wallet SET balance = {balance - price} WHERE telegram_id = {call.from_user.id}""")
 		conn.commit()
 		conn.close()
-		bot.send_message(call.message.chat.id, f"Grats. You bought {call.data[3:]}!\nYour order number:\n3cb50a7b990798c0559b9032b5f8586f7de223217528591d6f3dce959180038b")
+		bot.send_message(call.message.chat.id, f"Поздравляю. Вы купили {call.data[3:]}!\nНомер вашего заказа:\n3cb50a7b990798c0559b9032b5f8586f7de223217528591d6f3dce959180038b")
 	else:
 		conn.close()
-		bot.send_message(call.message.chat.id, "Sorry, you don't have enough money.")
+		bot.send_message(call.message.chat.id, "Прошу прощения, но у вас недостаточно денег.")
 		time.sleep(2)
-		bot.send_message(call.message.chat.id, "If you need money, I have an offer for you. Write me /job and I'll tell you more.")
+		bot.send_message(call.message.chat.id, "Если вам нужны деньги, то у меня для вас предложение. Пришлите мне /job и я расскажу более детально.")
 
 @bot.message_handler(commands=['job'])
 def job(message):
 	conn = sqlite3.connect("mydatabase.db")
 	cursor = conn.cursor()
 	task = {
-		1: {'text': "This is your first task:\nhttps://imgur.com/a/IuepuX6\nIn addition to selling unusual items, I also do detective work.\nOne of my clients asked me to decipher it.\nSend me an answer when you're done.",'answer': "minimumstakeamount"},
-		2: {'text': "This is your second task:\nhttps://pastebin.com/MjfZN9t5\nAnother client encrypted the password to his bank account and forgot how to decrypt it.\nHe pays a lot of money for decryption. I'll wait for the password from the bank.",'answer': "1c62590c99871030411c60c4780da31ec05c4db349e2f02d79c01228fccd9380"},
-		3: {'text': "This is your third task:\n((BV80605001911AP)- (sqrt(-1)))^2\nAnd finally the last task. To be honest, I'm ashamed to ask you, but could you help with my child's homework?\nI've seen this problem somewhere, but I can't remember the solution.\nI'll wait for the number.",'answer': "-16"}}
+		1: {
+			'text': "Это ваше первое задание:\nhttps://imgur.com/a/IuepuX6\nКроме продажи необычных вещей, я еще выполняю разные заказы.\nОдин из моих клиентов попросил меня расшифровать это.\nПришлите мне ответ, когда закончите.",
+			'answer': "minimumstakeamount"},
+		2: {
+			'text': "Это ваше второе задание:\nhttps://pastebin.com/MjfZN9t5\nДругой мой клиент зашифровал ключ от своего цифрового кошелька, но забыл как расшифровывать его.\nОн готов заплатить большие деньги за расшифровку. Я буду ждать от вас ключ от кошелька.",
+			'answer': "1c62590c99871030411c60c4780da31ec05c4db349e2f02d79c01228fccd9380"},
+		3: {
+			'text': "Это ваше третье задание:\n((BV80605001911AP)- (sqrt(-1)))^2\nЕсли честно, мне стыдно просить вас об этом, но не могли бы вы помочь с домашним заданием моей дочери?\nЯ где-то видел эту задачу, но не могу вспомнить ее решение.\nЯ буду ждать число.",
+			'answer': "-16"}}
 	if not cursor.execute(f"""SELECT * FROM wallet WHERE telegram_id = {message.from_user.id}""").fetchall():
-		cursor.execute(f"""INSERT INTO wallet ('telegram_id', 'username') VALUES ('{message.from_user.id}', '{message.from_user.username}')""")
-		cursor.execute(f"""INSERT INTO steps ('telegram_id', 'username') VALUES ('{message.from_user.id}', '{message.from_user.username}')""")
+		cursor.execute(f"""INSERT INTO wallet ('telegram_id', 'username') VALUES ('{message.from_user.id}', 'anonymus')""")
+		cursor.execute(f"""INSERT INTO steps ('telegram_id', 'username') VALUES ('{message.from_user.id}', 'anonymus')""")
 		conn.commit()
 		conn.close()
 		return send_welcome(message)
@@ -150,7 +156,7 @@ def job(message):
 		bot.send_message(message.chat.id, task[3]['text'])
 		bd_change(f"""UPDATE steps SET status = 'work' WHERE telegram_id = {message.from_user.id}""")
 	elif step == 'passed':
-		bot.send_message(message.chat.id, 'You already solved all my tasks! You can start trading now')
+		bot.send_message(message.chat.id, 'Вы уже выполнили все мои задания! Теперь вы можете купить то, что вам нужно.')
 	conn.close()
 
 
@@ -159,12 +165,18 @@ def quest(message):
 	conn = sqlite3.connect("mydatabase.db")
 	cursor = conn.cursor()
 	task = {
-		1: {'text': "This is your first task:\nhttps://imgur.com/a/IuepuX6\nIn addition to selling unusual items, I also do detective work.\nOne of my clients asked me to decipher it.\nSend me an answer when you're done.",'answer': "minimumstakeamount"},
-		2: {'text': "This is your second task:\nhttps://pastebin.com/MjfZN9t5\nAnother client encrypted the password to his bank account and forgot how to decrypt it.\nHe pays a lot of money for decryption. I'll wait for the password from the bank.",'answer': "1c62590c99871030411c60c4780da31ec05c4db349e2f02d79c01228fccd9380"},
-		3: {'text': "This is your third task:\n((BV80605001911AP)- (sqrt(-1)))^2\nAnd finally the last task. To be honest, I'm ashamed to ask you, but could you help with my child's homework?\nI've seen this problem somewhere, but I can't remember the solution.\nI'll wait for the number.",'answer': "-16"}}
+		1: {
+			'text': "Это ваше первое задание:\nhttps://imgur.com/a/IuepuX6\nКроме продажи необычных вещей, я еще выполняю разные заказы.\nОдин из моих клиентов попросил меня расшифровать это.\nПришлите мне ответ, когда закончите.",
+			'answer': "minimumstakeamount"},
+		2: {
+			'text': "Это ваше второе задание:\nhttps://pastebin.com/MjfZN9t5\nДругой мой клиент зашифровал ключ от своего цифрового кошелька, но забыл как расшифровывать его.\nОн готов заплатить большие деньги за расшифровку. Я буду ждать от вас ключ от кошелька.",
+			'answer': "1c62590c99871030411c60c4780da31ec05c4db349e2f02d79c01228fccd9380"},
+		3: {
+			'text': "Это ваше третье задание:\n((BV80605001911AP)- (sqrt(-1)))^2\nЕсли честно, мне стыдно просить вас об этом, но не могли бы вы помочь с домашним заданием моей дочери?\nЯ где-то видел эту задачу, но не могу вспомнить ее решение.\nЯ буду ждать число.",
+			'answer': "-16"}}
 	if not cursor.execute(f"""SELECT * FROM wallet WHERE telegram_id = {message.from_user.id}""").fetchall():
-		cursor.execute(f"""INSERT INTO wallet ('telegram_id', 'username') VALUES ('{message.from_user.id}', '{message.from_user.username}')""")
-		cursor.execute(f"""INSERT INTO steps ('telegram_id', 'username') VALUES ('{message.from_user.id}', '{message.from_user.username}')""")
+		cursor.execute(f"""INSERT INTO wallet ('telegram_id', 'username') VALUES ('{message.from_user.id}', 'anonymus')""")
+		cursor.execute(f"""INSERT INTO steps ('telegram_id', 'username') VALUES ('{message.from_user.id}', 'anonymus')""")
 		conn.commit()
 		conn.close()
 		return send_welcome(message)
@@ -181,26 +193,26 @@ def quest(message):
 			bd_change(f"""UPDATE steps SET step = 'second' WHERE telegram_id = {message.from_user.id}""")
 			bd_change(f"""UPDATE steps SET status = 'wait' WHERE telegram_id = {message.from_user.id}""")
 			bd_change(f"""UPDATE wallet SET balance = 3000 WHERE telegram_id = {message.from_user.id}""")
-			bot.send_message(message.chat.id, 'Well done! Take 3000$ Write me /job to get the next task.')
+			bot.send_message(message.chat.id, 'Хорошая работа! Вы заработали 3000$. Пришлите мне /job , чтобы получить следующее задание.')
 		else:
-			bot.send_message(message.chat.id, 'Wrong answer! I\'m waiting for right answer.')
+			bot.send_message(message.chat.id, 'Неправильный ответ! Попробуйте еще раз.')
 	elif step == 'second':
 		if message.text == task[2]['answer']:
 			bd_change(f"""UPDATE steps SET step = 'third' WHERE telegram_id = {message.from_user.id}""")
 			bd_change(f"""UPDATE steps SET status = 'wait' WHERE telegram_id = {message.from_user.id}""")
 			bd_change(f"""UPDATE wallet SET balance = 6000 WHERE telegram_id = {message.from_user.id}""")
-			bot.send_message(message.chat.id, 'Well done! Take 3000$ Write me /job to get the next task.')
+			bot.send_message(message.chat.id, 'Хорошая работа! Вы заработали 3000$. Пришлите мне /job , чтобы получить следующее задание.')
 		else:
-			bot.send_message(message.chat.id, 'Wrong answer! I\'m waiting for right answer.')
+			bot.send_message(message.chat.id, 'Неправильный ответ! Попробуйте еще раз.')
 	elif step == 'third':
 		if message.text == task[3]['answer']:
 			bd_change(f"""UPDATE steps SET step = 'passed' WHERE telegram_id = {message.from_user.id}""")
 			bd_change(f"""UPDATE wallet SET balance = 9000 WHERE telegram_id = {message.from_user.id}""")
 			bd_change(f"""UPDATE steps SET status = 'wait' WHERE telegram_id = {message.from_user.id}""")
-			bot.send_message(message.chat.id, 'Well done! Take 3000$ You\'re good! You completed all my tasks. You can start trading.')
+			bot.send_message(message.chat.id, 'Хорошая работа! Вы заработали 3000$. Вы выполнили все мои задачи. Можете приступить к покупкам.')
 			send_welcome(message)
 		else:
-			bot.send_message(message.chat.id, 'Wrong answer! I\'m waiting for right answer.')
+			bot.send_message(message.chat.id, 'Неправильный ответ! Попробуйте еще раз.')
 	else:
 		pass
 	conn.commit()
